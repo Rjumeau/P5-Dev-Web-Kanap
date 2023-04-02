@@ -35,7 +35,6 @@ const addProductToDom = (product) => {
 
 const displayProducts = async () => {
   const products = await getProducts()
-  console.log(products)
   products.forEach((product) => {
     addProductToDom(product)
   })
