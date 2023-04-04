@@ -1,9 +1,11 @@
+// === PRODUCTS API CALL ===
 const getProducts = async () => {
   const response = await fetch('http://localhost:3000/api/products')
   const products = await response.json()
   return products
 }
 
+// === ADD PRODUCTS CONTENT ===
 const addProductToDom = (product) => {
   const itemsSection = document.querySelector('#items')
 
@@ -30,8 +32,6 @@ const addProductToDom = (product) => {
   productArticle.append(productDescription)
   itemsSection.append(productLink)
 }
-// Première colonne : premier attribut
-// Deuxième colonne : deuxième attribut
 
 const displayProducts = async () => {
   const products = await getProducts()

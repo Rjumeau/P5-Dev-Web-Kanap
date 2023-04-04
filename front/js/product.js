@@ -1,9 +1,10 @@
+// === PRODUCT API CALL FUNCTION ===
 const getProduct = async (id) => {
   const response = await fetch(`http://localhost:3000/api/products/${id}`)
   const data = await response.json()
   return data
 }
-
+// === PRODUCT CONTENT CREATION FUNCTIONS ===
 const insertProductImg = async(product) => {
   const imgParent = document.querySelector(".item__img")
   const productImg = document.createElement("img")
@@ -45,33 +46,56 @@ const insertProductContent = async(id) => {
   insertColorOptions(product.colors)
 }
 
+// === ADD CART CONTENT FUNCTIONS ===
+
+// Need to display constraint to our user for quantity & color values
+const handleInitialValuesErrors = (quantity, color) => {
+  if (quantity <= 0 || color === '') {
+    throw new Error('La quantité et la couleur doivent être spécifiées')
+  } else if (quantity > 100) {
+    throw new Error('La quantité ne doit pas dépasser 100')
+  }
+}
+
+const handleQuantitySumError = (initialQuantity, sumQuantity) => {
+  if (sumQuantity > 100) {
+    throw new Error(`Votre panier contient déjà ${initialQuantity} de ce produit,
+      le total ne peut pas dépasser 100, merci de retirer des produits avant de passer commande`)
+  }
+}
+
 const addProductToCart = (id) => {
   const cart = localStorage.getItem('cart') ? JSON.parse(localStorage.getItem('cart')) : []
   const quantity = document.querySelector("#quantity").value
   const color = document.querySelector('#colors').value
 
-  if (quantity <= 0 || color === '') {
-    return window.alert('La quantité et la couleur doivent être spécifiées.')
+  try {
+    handleInitialValuesErrors(quantity, color)
+
+    const sameProduct = cart.find((product) => {
+      product.id === id && product.color === color
+    })
+
+    if (sameProduct) {
+      initialQuantity = sameProduct.quantity
+      sameProduct.quantity = parseInt(sameProduct.quantity) + parseInt(quantity)
+
+      handleQuantitySumError(initialQuantity, sameProduct.quantity)
+    } else {
+      const cartItem = { id: id, quantity: quantity, color: color }
+      cart.push(cartItem)
+    }
+
+    localStorage.removeItem("cart")
+    localStorage.setItem("cart", JSON.stringify(cart))
+    window.alert('Votre produit a bien été ajouté au panier')
+  } catch (error) {
+    window.alert(error.message)
   }
-
-  const sameProduct = cart.find((product) => {
-    product.id === id && product.color === color
-  })
-
-  if (sameProduct) {
-    sameProduct.quantity = parseInt(sameProduct.quantity) + parseInt(quantity)
-  } else {
-    const cartItem = { id: id, quantity: quantity, color: color}
-    cart.push(cartItem)
-  }
-
-  localStorage.removeItem("cart")
-  localStorage.setItem("cart", JSON.stringify(cart))
-  window.alert('Votre produit a bien été ajouté au panier')
 }
 
+// === Fetch data from product and add user input to cart ===
 const productUrl = new URL(window.location.href)
 const productId = productUrl.searchParams.get("id")
 insertProductContent(productId)
 document.querySelector("#addToCart").addEventListener('click', () => addProductToCart(productId))
-console.log(localStorage.getItem('cart'))
