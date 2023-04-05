@@ -1,9 +1,5 @@
 // === PRODUCTS API CALL ===
-const getProducts = async () => {
-  const response = await fetch('http://localhost:3000/api/products')
-  const products = await response.json()
-  return products
-}
+import { getProducts} from './api.js'
 
 // === ADD PRODUCTS CONTENT ===
 const addProductToDom = (product) => {

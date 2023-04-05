@@ -1,9 +1,5 @@
-// === PRODUCT API CALL FUNCTION ===
-const getProduct = async (id) => {
-  const response = await fetch(`http://localhost:3000/api/products/${id}`)
-  const data = await response.json()
-  return data
-}
+import { getProduct } from "./api.js"
+
 // === PRODUCT CONTENT CREATION FUNCTIONS ===
 const insertProductImg = async(product) => {
   const imgParent = document.querySelector(".item__img")
