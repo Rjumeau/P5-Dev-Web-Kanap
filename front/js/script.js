@@ -17,7 +17,7 @@ const addProductToDom = (product) => {
   productTitle.classList.add('productName')
   productTitle.innerText = product.name
 
-  productDescription = document.createElement('p')
+  const productDescription = document.createElement('p')
   productDescription.classList.add('productDescription')
   productDescription.innerText = product.description
 

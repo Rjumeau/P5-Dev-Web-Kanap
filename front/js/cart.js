@@ -7,7 +7,7 @@ const cleanCart = (cart) => {
   const sanitizedCart = cart.filter(item => item.color !== "" && item.quantity !== "0")
   const newCart = removeDuplicatesAndSumQuantities(sanitizedCart)
   // clean local storage et add new cart with sanitized values
-  localStorage.clear
+  localStorage.clear()
   localStorage.setItem('cart', JSON.stringify(newCart))
   return JSON.parse(localStorage.getItem('cart'))
 }
@@ -112,21 +112,53 @@ const createProductDelete = () => {
   productDeleteText.classList.add("deleteItem")
   productDeleteText.innerText = "Supprimer"
 
+  productDeleteText.addEventListener('click', (event) => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce produit de votre panier ?')) {
+      deleteProduct(event)
+    }
+  })
   productDeleteSettings.append(productDeleteText)
   return productDeleteSettings
 }
 
+// update quantity event
 const updateProductQuantity = (event) => {
   // closest event
-  const article = event.target.closest('article')
-  const id = article.dataset.id
-  const color = article.dataset.color
+  const product = event.target.closest('product')
+  const id = product.dataset.id
+  const color = product.dataset.color
 
   const newQuantity = event.target.value
-  const input = article.querySelector('input')
+  const input = product.querySelector('input')
   input.setAttribute('value', newQuantity)
 
-  // TO DO : update cart with new quantity
+  const cart = JSON.parse(localStorage.getItem('cart'))
+  const productToUpdate = cart.find(product => product.id === id && product.color === color)
+  productToUpdate.quantity = parseInt(newQuantity)
+  localStorage.clear()
+  localStorage.setItem('cart', JSON.stringify(cart))
+}
+
+// delete product event
+const deleteProduct = (event) => {
+  const product = event.target.closest('article')
+  const id = product.id
+  product.innerHTML = ""
+
+  const cart = JSON.parse(localStorage.getItem('cart'))
+  const productToDelete = cart.find(product => product.id === id)
+  const index = cart.indexOf(productToDelete)
+  cart.splice(index, 1)
+
+  localStorage.clear()
+  localStorage.setItem('cart', JSON.stringify(cart))
+
+  window.alert('Votre produit a bien été supprimé du panier')
+  const sectionParent = document.querySelector("#cart__items")
+  const emptyCartText = document.createElement("p")
+  emptyCartText.classList.add('cart__item')
+  emptyCartText.innerText = "Votre panier est vide"
+  sectionParent.append(emptyCartText)
 }
 
 // append delete and quantity to product article
@@ -144,7 +176,7 @@ const createProductCartSettings = (product) => {
   return productContentSettings
 }
 
-// insert all content defined above to insert a product in cart
+// insert all content defined above to insert products in cart
 const insertCartProducts = async(cart) => {
   const sectionParent = document.querySelector("#cart__items")
   cart.forEach(async (product) => {
@@ -166,11 +198,12 @@ const insertCartProducts = async(cart) => {
 // === Cart creation logic ===
 const storageCart = localStorage.getItem('cart')
 const sectionParent = document.querySelector("#cart__items")
-if (storageCart) {
+if (storageCart && !storageCart.length === 0) {
   const cart = JSON.parse(storageCart)
   insertCartProducts(cleanCart(cart))
 } else {
   const emptyCartText = document.createElement("p")
-                                .innerText("Votre panier est vide")
+  emptyCartText.classList.add('cart__item')
+  emptyCartText.innerText = "Votre panier est vide"
   sectionParent.append(emptyCartText)
 }
