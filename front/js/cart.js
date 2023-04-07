@@ -154,11 +154,7 @@ const deleteProduct = (event) => {
   localStorage.setItem('cart', JSON.stringify(cart))
 
   window.alert('Votre produit a bien été supprimé du panier')
-  const sectionParent = document.querySelector("#cart__items")
-  const emptyCartText = document.createElement("p")
-  emptyCartText.classList.add('cart__item')
-  emptyCartText.innerText = "Votre panier est vide"
-  sectionParent.append(emptyCartText)
+  insertEmptyCartText()
 }
 
 // append delete and quantity to product article
@@ -194,16 +190,20 @@ const insertCartProducts = async(cart) => {
   })
 }
 
-
-// === Cart creation logic ===
-const storageCart = localStorage.getItem('cart')
-const sectionParent = document.querySelector("#cart__items")
-if (storageCart && !storageCart.length === 0) {
-  const cart = JSON.parse(storageCart)
-  insertCartProducts(cleanCart(cart))
-} else {
+const insertEmptyCartText = () => {
+  const sectionParent = document.querySelector("#cart__items")
   const emptyCartText = document.createElement("p")
   emptyCartText.classList.add('cart__item')
   emptyCartText.innerText = "Votre panier est vide"
   sectionParent.append(emptyCartText)
+}
+
+
+// === Cart creation logic ===
+const storageCart = localStorage.getItem('cart')
+if (storageCart && !storageCart.length === 0) {
+  const cart = JSON.parse(storageCart)
+  insertCartProducts(cleanCart(cart))
+} else {
+  insertEmptyCartText()
 }
