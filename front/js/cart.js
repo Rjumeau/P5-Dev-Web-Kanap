@@ -1,5 +1,10 @@
 import { getProduct } from "./api.js"
 
+const EMAIL_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+const COMMUN_REGEX = /^[a-zA-Z]+(?:[\s-][a-zA-Z]+)*$/
+const ADDRESS_REGEX = /^\d+\s(?:[a-zA-Z]+(?:[\s-][a-zA-Z]+)*)?$/
+
+
 // === Sanitize cart before display it ===
 
 const cleanCart = (cart) => {
@@ -154,6 +159,7 @@ const deleteProduct = (event) => {
   localStorage.setItem('cart', JSON.stringify(cart))
 
   window.alert('Votre produit a bien été supprimé du panier')
+  // TO DO : add a condition if cart is empty before display this text
   insertEmptyCartText()
 }
 
@@ -223,12 +229,79 @@ const insertEmptyCartText = () => {
   sectionParent.append(emptyCartText)
 }
 
+// === Contact form ===
+
+// get data from form
+const getFormData = (contactForm) => {
+  const formData = new FormData(contactForm)
+  const firstName = formData.get('firstName')
+  const lastName = formData.get('lastName')
+  const address = formData.get('address')
+  const city = formData.get('city')
+  const email = formData.get('email')
+
+  return {
+    firstName: firstName,
+    lastName: lastName,
+    address: address,
+    city: city,
+    email: email
+  }
+}
+
+// validate all inputs with regexs
+const validateFormData = (formData) => {
+  const errors = {}
+
+  if (!EMAIL_REGEX.test(formData.email)) {
+    errors.email = "L'email n'est pas valide"
+  }
+
+  if (!ADDRESS_REGEX.test(formData.address)) {
+    errors.address = "L'adresse n'est pas valide"
+  }
+
+  // firstName, lastName and city have same pattern so we use the same regex
+  if (!COMMUN_REGEX.test(formData.firstName)) {
+    errors.firstName = "Le prénom n'est pas valide"
+  }
+
+  if (!COMMUN_REGEX.test(formData.lastName)) {
+    errors.lastName = "Le nom de famille n'est pas valide"
+  }
+
+  if (!COMMUN_REGEX.test(formData.city)) {
+    errors.city = "La ville n'est pas valide"
+  }
+
+  const errorKeys = Object.keys(errors)
+  if (errorKeys.length > 0) {
+    for (const errorKey of errorKeys) {
+      const errorMsg = document.querySelector(`${errorKey}ErrorMsg`)
+      errorMsg.innerText = errorKeys[errorKey]
+    }
+    return false
+  }
+  return true
+ }
+
+// post contact form data if all inputs are valid
+const postContactForm = () => {
+  const contactForm = document.querySelector('.cart__order__form')
+  contactForm.addEventListener('submit', (event) => {
+    event.preventDefault()
+    const formData = getFormData(contactForm)
+    validateFormData(formData)
+  })
+}
+
 // === Cart creation logic ===
 const storageCart = localStorage.getItem('cart')
 if (storageCart && !(storageCart.length === 0)) {
   const cart = JSON.parse(storageCart)
   const cleanedCart = cleanCart(cart)
   insertCartProducts(cleanedCart)
+  postContactForm()
 } else {
   insertEmptyCartText()
 }
