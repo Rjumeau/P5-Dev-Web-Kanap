@@ -255,8 +255,8 @@ const validateFormData = (formData) => {
 
   if (!EMAIL_REGEX.test(formData.email)) {
     errors.email = "L'email n'est pas valide"
-  }
 
+  }
   if (!ADDRESS_REGEX.test(formData.address)) {
     errors.address = "L'adresse n'est pas valide"
   }
@@ -277,8 +277,8 @@ const validateFormData = (formData) => {
   const errorKeys = Object.keys(errors)
   if (errorKeys.length > 0) {
     for (const errorKey of errorKeys) {
-      const errorMsg = document.querySelector(`${errorKey}ErrorMsg`)
-      errorMsg.innerText = errorKeys[errorKey]
+      const errorMsg = document.querySelector(`#${errorKey}ErrorMsg`)
+      errorMsg.innerText = errors[errorKey]
     }
     return false
   }
@@ -291,7 +291,8 @@ const postContactForm = () => {
   contactForm.addEventListener('submit', (event) => {
     event.preventDefault()
     const formData = getFormData(contactForm)
-    validateFormData(formData)
+    const formIsValid = validateFormData(formData)
+
   })
 }
 
