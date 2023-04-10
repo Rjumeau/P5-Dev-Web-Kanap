@@ -232,7 +232,7 @@ const insertEmptyCartText = () => {
 // === Contact form ===
 
 // get data from form
-const getFormData = (contactForm) => {
+const createFormDataObject = (contactForm) => {
   const formData = new FormData(contactForm)
   const firstName = formData.get('firstName')
   const lastName = formData.get('lastName')
@@ -285,15 +285,25 @@ const validateFormData = (formData) => {
   return true
  }
 
-// post contact form data if all inputs are valid
-const postContactForm = () => {
-  const contactForm = document.querySelector('.cart__order__form')
-  contactForm.addEventListener('submit', (event) => {
-    event.preventDefault()
-    const formData = getFormData(contactForm)
-    const formIsValid = validateFormData(formData)
+// get contact form data if all inputs are valid
+const getContactFormData = (contactForm) => {
+  const formData = createFormDataObject(contactForm)
+  const formIsValid = validateFormData(formData)
 
-  })
+  if (formIsValid) return formData
+}
+
+const createOrder = (contactForm) => {
+  const order = {}
+  const formData = getContactFormData(contactForm)
+  const cart = localStorage.getItem('cart')
+
+  const productIds = JSON.parse(cart).map(product => product.id)
+
+  order.cart = productIds
+  order.formData = formData
+  const jsonOrder = JSON.stringify(order)
+  console.log(jsonOrder)
 }
 
 // === Cart creation logic ===
@@ -302,7 +312,12 @@ if (storageCart && !(storageCart.length === 0)) {
   const cart = JSON.parse(storageCart)
   const cleanedCart = cleanCart(cart)
   insertCartProducts(cleanedCart)
-  postContactForm()
+
+  const contactForm = document.querySelector('.cart__order__form')
+  contactForm.addEventListener('submit', (event) => {
+    event.preventDefault()
+    createOrder(contactForm)
+  })
 } else {
   insertEmptyCartText()
 }
