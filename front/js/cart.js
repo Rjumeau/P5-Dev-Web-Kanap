@@ -172,6 +172,29 @@ const createProductCartSettings = (product) => {
   return productContentSettings
 }
 
+// sum price & quantity cart total
+const insertCartTotal = async(cart) => {
+  let totalPrice = 0
+  let totalQuantity = 0
+
+  const displayTotalPrice = document.querySelector('#totalPrice')
+  const displayTotalQuantity = document.querySelector('#totalQuantity')
+  await new Promise((resolve) => {
+    cart.forEach(async (product, index) => {
+      const productData = await getProduct(product.id)
+      totalPrice += parseInt(product.quantity) * productData.price
+      totalQuantity += parseInt(product.quantity)
+
+      if (index === cart.length - 1) {
+        resolve()
+      }
+    })
+  })
+
+  displayTotalPrice.append(totalPrice)
+  displayTotalQuantity.append(totalQuantity)
+}
+
 // insert all content defined above to insert products in cart
 const insertCartProducts = async(cart) => {
   const sectionParent = document.querySelector("#cart__items")
@@ -188,6 +211,8 @@ const insertCartProducts = async(cart) => {
     productArticle.append(productCartSettings)
     sectionParent.append(productArticle)
   })
+
+  await insertCartTotal(cart)
 }
 
 const insertEmptyCartText = () => {
@@ -198,12 +223,12 @@ const insertEmptyCartText = () => {
   sectionParent.append(emptyCartText)
 }
 
-
 // === Cart creation logic ===
 const storageCart = localStorage.getItem('cart')
-if (storageCart && !storageCart.length === 0) {
+if (storageCart && !(storageCart.length === 0)) {
   const cart = JSON.parse(storageCart)
-  insertCartProducts(cleanCart(cart))
+  const cleanedCart = cleanCart(cart)
+  insertCartProducts(cleanedCart)
 } else {
   insertEmptyCartText()
 }
