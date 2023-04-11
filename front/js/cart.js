@@ -1,4 +1,4 @@
-import { getProduct } from "./api.js"
+import { getProduct, postOrder } from "./api.js"
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 const COMMUN_REGEX = /^[a-zA-Z]+(?:[\s-][a-zA-Z]+)*$/
@@ -39,7 +39,7 @@ const removeDuplicatesAndSumQuantities = (cart) => {
 
 // === Product creation stuff ===
 
-// <article>
+// article
 const createProductArticle = (product) => {
   const productArticle = document.createElement("article")
   productArticle.classList.add("cart__item")
@@ -49,7 +49,7 @@ const createProductArticle = (product) => {
   return productArticle
 }
 
-// <img>
+// img
 const createProductImg = (productData) => {
   const productImgDiv = document.createElement("div")
   productImgDiv.classList.add("cart__item__img")
@@ -221,6 +221,7 @@ const insertCartProducts = async(cart) => {
   await insertCartTotal(cart)
 }
 
+// insert a sentence if cart is empty
 const insertEmptyCartText = () => {
   const sectionParent = document.querySelector("#cart__items")
   const emptyCartText = document.createElement("p")
@@ -231,7 +232,7 @@ const insertEmptyCartText = () => {
 
 // === Contact form ===
 
-// get data from form
+// get data from form and create object with it
 const createFormDataObject = (contactForm) => {
   const formData = new FormData(contactForm)
   const firstName = formData.get('firstName')
@@ -293,20 +294,25 @@ const getContactFormData = (contactForm) => {
   if (formIsValid) return formData
 }
 
-const createOrder = (contactForm) => {
+const createOrderObject = async(contactForm) => {
   const order = {}
-  const formData = getContactFormData(contactForm)
+  const contactformData = getContactFormData(contactForm)
   const cart = localStorage.getItem('cart')
 
   const productIds = JSON.parse(cart).map(product => product.id)
 
-  order.cart = productIds
-  order.formData = formData
-  const jsonOrder = JSON.stringify(order)
-  console.log(jsonOrder)
+  order.products = productIds
+  order.contact = contactformData
+  return order
 }
 
-// === Cart creation logic ===
+const createOrder = async(contactForm) => {
+  const orderObject = await createOrderObject(contactForm)
+  const order = await postOrder(orderObject)
+  window.location = `/front/html/confirmation.html?orderid=${order.orderId}`
+}
+
+// === Cart and order creation logic ===
 const storageCart = localStorage.getItem('cart')
 if (storageCart && !(storageCart.length === 0)) {
   const cart = JSON.parse(storageCart)
