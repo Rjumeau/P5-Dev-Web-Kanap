@@ -1,7 +1,7 @@
 import { getProduct, postOrder } from "./api.js"
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
-const COMMUN_REGEX = /^[a-zA-Z]+(?:[\s-][a-zA-Z]+)*$/
+const COMMON_REGEX = /^[a-zA-Z]+(?:[\s-][a-zA-Z]+)*$/ // firstName, lastName, city
 const ADDRESS_REGEX = /^\d+\s(?:[a-zA-Z]+(?:[\s-][a-zA-Z]+)*)?$/
 
 
@@ -263,15 +263,15 @@ const validateFormData = (formData) => {
   }
 
   // firstName, lastName and city have same pattern so we use the same regex
-  if (!COMMUN_REGEX.test(formData.firstName)) {
+  if (!COMMON_REGEX.test(formData.firstName)) {
     errors.firstName = "Le prénom n'est pas valide"
   }
 
-  if (!COMMUN_REGEX.test(formData.lastName)) {
+  if (!COMMON_REGEX.test(formData.lastName)) {
     errors.lastName = "Le nom de famille n'est pas valide"
   }
 
-  if (!COMMUN_REGEX.test(formData.city)) {
+  if (!COMMON_REGEX.test(formData.city)) {
     errors.city = "La ville n'est pas valide"
   }
 
