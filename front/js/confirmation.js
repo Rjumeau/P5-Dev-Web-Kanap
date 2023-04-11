@@ -1,2 +1,3 @@
 const orderId = new URLSearchParams(document.location.search).get('orderid')
-console.log(orderId)
+const orderIdElement = document.querySelector('#orderId');
+orderIdElement.insertAdjacentHTML('beforeend', `<strong>${orderId}</strong>`)
