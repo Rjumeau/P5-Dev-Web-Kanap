@@ -100,7 +100,6 @@ const createProductQuantity = (product) => {
   productQuantityInput.setAttribute("max", 100)
   productQuantityInput.setAttribute("value", product.quantity)
 
-  productQuantityInput.addEventListener('change', (event) => { updateProductQuantity(event) })
 
   productQuantitySettings.append(document.createElement("p").innerText = "Qté:")
   productQuantitySettings.append(productQuantityInput)
@@ -117,19 +116,14 @@ const createProductDelete = () => {
   productDeleteText.classList.add("deleteItem")
   productDeleteText.innerText = "Supprimer"
 
-  productDeleteText.addEventListener('click', (event) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce produit de votre panier ?')) {
-      deleteProduct(event)
-    }
-  })
   productDeleteSettings.append(productDeleteText)
   return productDeleteSettings
 }
 
 // update quantity event
-const updateProductQuantity = (event) => {
+const updateProductQuantity = (event, cart) => {
   // closest event
-  const product = event.target.closest('product')
+  const product = event.target.closest('article')
   const id = product.dataset.id
   const color = product.dataset.color
 
@@ -137,30 +131,51 @@ const updateProductQuantity = (event) => {
   const input = product.querySelector('input')
   input.setAttribute('value', newQuantity)
 
-  const cart = JSON.parse(localStorage.getItem('cart'))
   const productToUpdate = cart.find(product => product.id === id && product.color === color)
   productToUpdate.quantity = parseInt(newQuantity)
   localStorage.clear()
   localStorage.setItem('cart', JSON.stringify(cart))
+
+  insertCartTotal(cart)
+}
+
+const updateProductEvent = async(cart) => {
+  const updateInputs = document.querySelectorAll('.itemQuantity')
+  updateInputs.forEach((updateInput) => {
+    updateInput.addEventListener('change', (event) => { updateProductQuantity(event, cart) })
+  })
+}
+
+const deleteProductEvent = async(cart) => {
+  const productDeleteButtons = document.querySelectorAll('.deleteItem')
+  productDeleteButtons.forEach(async (deleteButton) => {
+    deleteButton.addEventListener('click', (event) => {
+      if (confirm('Êtes-vous sûr de vouloir supprimer ce produit de votre panier ?')) {
+        deleteProduct(event, cart)
+      }
+    })
+  })
 }
 
 // delete product event
-const deleteProduct = (event) => {
+const deleteProduct = (event, cart) => {
   const product = event.target.closest('article')
-  const id = product.id
-  product.innerHTML = ""
+  const productParent = product.parentElement
+  const id = product.dataset.id
 
-  const cart = JSON.parse(localStorage.getItem('cart'))
   const productToDelete = cart.find(product => product.id === id)
   const index = cart.indexOf(productToDelete)
   cart.splice(index, 1)
 
   localStorage.clear()
   localStorage.setItem('cart', JSON.stringify(cart))
+  updateCartTotal(productToDelete)
 
   window.alert('Votre produit a bien été supprimé du panier')
-  // TO DO : add a condition if cart is empty before display this text
-  insertEmptyCartText()
+
+  productParent.removeChild(product)
+
+  if (cart.length < 1) insertEmptyCartText()
 }
 
 // append delete and quantity to product article
@@ -197,9 +212,25 @@ const insertCartTotal = async(cart) => {
     })
   })
 
+  displayTotalPrice.innerText = ""
+  displayTotalQuantity.innerText = ""
+
   displayTotalPrice.append(totalPrice)
   displayTotalQuantity.append(totalQuantity)
 }
+
+const updateCartTotal = async(product) => {
+  const productData = await getProduct(product.id)
+  const totalPrice = document.querySelector('#totalPrice')
+  const totalQuantity = document.querySelector('#totalQuantity')
+
+  const newPrice = parseInt(totalPrice.textContent) - (productData.price * product.quantity)
+  const newQuantity = parseInt(totalQuantity.textContent) - product.quantity
+
+  totalPrice.innerText = newPrice
+  totalQuantity.innerText = newQuantity
+}
+
 
 // insert all content defined above to insert products in cart
 const insertCartProducts = async(cart) => {
@@ -219,11 +250,15 @@ const insertCartProducts = async(cart) => {
   })
 
   await insertCartTotal(cart)
+  await deleteProductEvent(cart)
+  await updateProductEvent(cart)
+
 }
 
 // insert a sentence if cart is empty
 const insertEmptyCartText = () => {
   const sectionParent = document.querySelector("#cart__items")
+  sectionParent.innerHTML = ""
   const emptyCartText = document.createElement("p")
   emptyCartText.classList.add('cart__item')
   emptyCartText.innerText = "Votre panier est vide"
