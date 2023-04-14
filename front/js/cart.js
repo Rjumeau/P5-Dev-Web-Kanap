@@ -321,30 +321,22 @@ const validateFormData = (formData) => {
   return true
  }
 
-// get contact form data if all inputs are valid
-const getContactFormData = (contactForm) => {
+// get contact form data and create order if all inputs are valid
+const createOrder = async(contactForm) => {
+  const order = {}
   const formData = createFormDataObject(contactForm)
   const formIsValid = validateFormData(formData)
 
-  if (formIsValid) return formData
-}
+  if (formIsValid) {
+    const cart = localStorage.getItem('cart')
 
-const createOrderObject = async(contactForm) => {
-  const order = {}
-  const contactformData = getContactFormData(contactForm)
-  const cart = localStorage.getItem('cart')
+    const productIds = JSON.parse(cart).map(product => product.id)
 
-  const productIds = JSON.parse(cart).map(product => product.id)
-
-  order.products = productIds
-  order.contact = contactformData
-  return order
-}
-
-const createOrder = async(contactForm) => {
-  const orderObject = await createOrderObject(contactForm)
-  const order = await postOrder(orderObject)
-  window.location = `/front/html/confirmation.html?orderid=${order.orderId}`
+    order.products = productIds
+    order.contact = formData
+    await postOrder(order)
+    window.location = `/front/html/confirmation.html?orderid=${order.orderId}`
+  }
 }
 
 // === Cart and order creation logic ===
