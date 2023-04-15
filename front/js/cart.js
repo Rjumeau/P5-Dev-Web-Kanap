@@ -346,6 +346,8 @@ if (storageCart && !(storageCart.length === 0)) {
   const cleanedCart = cleanCart(cart)
   insertCartProducts(cleanedCart)
 
+  const contactInputs = document.querySelectorAll('.card__order__form__question')
+
   const contactForm = document.querySelector('.cart__order__form')
   contactForm.addEventListener('submit', (event) => {
     event.preventDefault()
