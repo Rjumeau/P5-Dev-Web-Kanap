@@ -347,8 +347,8 @@ const createOrder = async(contactForm) => {
 
   order.products = productIds
   order.contact = formData
-  await postOrder(order)
-  window.location = `/front/html/confirmation.html?orderid=${order.orderId}`
+  const postedOrder = await postOrder(order)
+  window.location = `/front/html/confirmation.html?orderid=${postedOrder.orderId}`
 }
 
 // === Cart and order creation logic ===
