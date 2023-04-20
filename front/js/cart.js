@@ -285,58 +285,70 @@ const createFormDataObject = (contactForm) => {
   }
 }
 
+// add input error msg under input
+const addInputErrorMsg = (eventTarget, text) => {
+  const inputError = document.querySelector(`#${eventTarget.id}ErrorMsg`)
+  inputError.innerText = text
+}
+
+// clean error msg before test inputs
+const cleanInputErrorMsg = (eventTarget) => {
+  const inputError = document.querySelector(`#${eventTarget.id}ErrorMsg`)
+  inputError.innerText = ""
+}
+
+// disable submit button if input is not valid
+const handleDisabledStatus = (status) => {
+  const submitButton = document.querySelector("#order")
+  submitButton.disabled = status
+  submitButton.style.opacity = submitButton.disabled ? '0.5' : '1'
+}
+
 // validate all inputs with regexs
-const validateFormData = (formData) => {
-  const errors = {}
+const validateFormData = (formData, eventTarget) => {
+  cleanInputErrorMsg(eventTarget)
 
-  if (!EMAIL_REGEX.test(formData.email)) {
-    errors.email = "L'email n'est pas valide"
-
+  if (!EMAIL_REGEX.test(formData) && eventTarget.id === 'email') {
+    addInputErrorMsg(eventTarget, "L'email n'est pas valide")
   }
-  if (!ADDRESS_REGEX.test(formData.address)) {
-    errors.address = "L'adresse n'est pas valide"
+  if (!ADDRESS_REGEX.test(formData) && eventTarget.id === 'address') {
+    addInputErrorMsg(eventTarget, "L'adresse n'est pas valide")
   }
 
   // firstName, lastName and city have same pattern so we use the same regex
-  if (!COMMON_REGEX.test(formData.firstName)) {
-    errors.firstName = "Le prénom n'est pas valide"
+  if (!COMMON_REGEX.test(formData) && eventTarget.id === 'firstName') {
+    addInputErrorMsg(eventTarget, "Le prénom n'est pas valide")
   }
 
-  if (!COMMON_REGEX.test(formData.lastName)) {
-    errors.lastName = "Le nom de famille n'est pas valide"
+  if (!COMMON_REGEX.test(formData) && eventTarget.id === 'lastName') {
+    addInputErrorMsg(eventTarget, "Le nom de famille n'est pas valide")
   }
 
-  if (!COMMON_REGEX.test(formData.city)) {
-    errors.city = "La ville n'est pas valide"
+  if (!COMMON_REGEX.test(formData) && eventTarget.id === 'city') {
+    addInputErrorMsg(eventTarget, "La ville n'est pas valide")
   }
+}
 
-  const errorKeys = Object.keys(errors)
-  if (errorKeys.length > 0) {
-    for (const errorKey of errorKeys) {
-      const errorMsg = document.querySelector(`#${errorKey}ErrorMsg`)
-      errorMsg.innerText = errors[errorKey]
-    }
-    return false
-  }
-  return true
- }
+const checkErrorsPresence = () => {
+  const errorParaphs = document.querySelectorAll('.cart__order__form__question p')
+  const errorTexts = Array.from(errorParaphs).map(p => p.textContent)
+                                             .filter(str => str !== '')
+  errorTexts.length > 0 ? handleDisabledStatus(true) : handleDisabledStatus(false)
+}
 
 // get contact form data and create order if all inputs are valid
 const createOrder = async(contactForm) => {
   const order = {}
   const formData = createFormDataObject(contactForm)
-  const formIsValid = validateFormData(formData)
 
-  if (formIsValid) {
-    const cart = localStorage.getItem('cart')
+  const cart = localStorage.getItem('cart')
 
-    const productIds = JSON.parse(cart).map(product => product.id)
+  const productIds = JSON.parse(cart).map(product => product.id)
 
-    order.products = productIds
-    order.contact = formData
-    await postOrder(order)
-    window.location = `/front/html/confirmation.html?orderid=${order.orderId}`
-  }
+  order.products = productIds
+  order.contact = formData
+  await postOrder(order)
+  window.location = `/front/html/confirmation.html?orderid=${order.orderId}`
 }
 
 // === Cart and order creation logic ===
@@ -346,7 +358,13 @@ if (storageCart && !(storageCart.length === 0)) {
   const cleanedCart = cleanCart(cart)
   insertCartProducts(cleanedCart)
 
-  const contactInputs = document.querySelectorAll('.card__order__form__question')
+  const contactInputs = document.querySelectorAll('.cart__order__form__question')
+  contactInputs.forEach(input => {
+    input.addEventListener('change', (event) => {
+      validateFormData(event.target.value, event.target)
+      checkErrorsPresence()
+    })
+  })
 
   const contactForm = document.querySelector('.cart__order__form')
   contactForm.addEventListener('submit', (event) => {
