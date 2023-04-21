@@ -353,8 +353,9 @@ const createOrder = async(contactForm) => {
 
 // === Cart and order creation logic ===
 const storageCart = localStorage.getItem('cart')
-if (storageCart && !(storageCart.length === 0)) {
-  const cart = JSON.parse(storageCart)
+const cart = JSON.parse(storageCart)
+
+if (cart && (cart.length > 0)) {
   const cleanedCart = cleanCart(cart)
   insertCartProducts(cleanedCart)
 
@@ -373,4 +374,5 @@ if (storageCart && !(storageCart.length === 0)) {
   })
 } else {
   insertEmptyCartText()
+  handleDisabledStatus(true)
 }
