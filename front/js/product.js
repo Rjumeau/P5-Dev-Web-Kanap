@@ -55,8 +55,7 @@ const handleInitialValuesErrors = (quantity, color) => {
 
 const handleQuantitySumError = (initialQuantity, sumQuantity) => {
   if (sumQuantity > 100) {
-    throw new Error(`Votre panier contient déjà ${initialQuantity} de ce produit,
-      le total ne peut pas dépasser 100, merci de retirer des produits avant de passer commande`)
+    throw new Error(`Votre panier contient déjà ${initialQuantity} de ce produit, le total ne peut pas dépasser 100, merci de retirer des produits avant de passer commande`)
   }
 }
 
@@ -64,16 +63,13 @@ const addProductToCart = (id) => {
   const cart = localStorage.getItem('cart') ? JSON.parse(localStorage.getItem('cart')) : []
   const quantity = document.querySelector("#quantity").value
   const color = document.querySelector('#colors').value
+  const sameProduct = cart.find(product => product.id === id && product.color === color)
 
   try {
     handleInitialValuesErrors(quantity, color)
 
-    const sameProduct = cart.find((product) => {
-      product.id === id && product.color === color
-    })
-
     if (sameProduct) {
-      initialQuantity = sameProduct.quantity
+      const initialQuantity = sameProduct.quantity
       sameProduct.quantity = parseInt(sameProduct.quantity) + parseInt(quantity)
 
       handleQuantitySumError(initialQuantity, sameProduct.quantity)
