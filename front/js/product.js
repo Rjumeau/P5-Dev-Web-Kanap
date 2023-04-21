@@ -1,4 +1,5 @@
 import { getProduct } from "./api.js"
+import { handleColorQuantityPresence, handleQuantityMaxError, handleQuantitySumError } from "./error.js"
 
 // === PRODUCT CONTENT CREATION FUNCTIONS ===
 const insertProductImg = async(product) => {
@@ -44,21 +45,6 @@ const insertProductContent = async(id) => {
 
 // === ADD CART CONTENT FUNCTIONS ===
 
-// Need to display constraint to our user for quantity & color values
-const handleInitialValuesErrors = (quantity, color) => {
-  if (quantity <= 0 || color === '') {
-    throw new Error('La quantité et la couleur doivent être spécifiées')
-  } else if (quantity > 100) {
-    throw new Error('La quantité ne doit pas dépasser 100')
-  }
-}
-
-const handleQuantitySumError = (initialQuantity, sumQuantity) => {
-  if (sumQuantity > 100) {
-    throw new Error(`Votre panier contient déjà ${initialQuantity} de ce produit, le total ne peut pas dépasser 100, merci de retirer des produits avant de passer commande`)
-  }
-}
-
 const addProductToCart = (id) => {
   const cart = localStorage.getItem('cart') ? JSON.parse(localStorage.getItem('cart')) : []
   const quantity = document.querySelector("#quantity").value
@@ -66,7 +52,8 @@ const addProductToCart = (id) => {
   const sameProduct = cart.find(product => product.id === id && product.color === color)
 
   try {
-    handleInitialValuesErrors(quantity, color)
+    handleColorQuantityPresence(quantity, color)
+    handleQuantityMaxError(quantity)
 
     if (sameProduct) {
       const initialQuantity = sameProduct.quantity

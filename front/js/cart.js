@@ -1,4 +1,5 @@
 import { getProduct, postOrder } from "./api.js"
+import { handleQuantityMaxError } from "./error.js"
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 const COMMON_REGEX = /^[a-zA-Z]+(?:[\s-][a-zA-Z]+)*$/ // firstName, lastName, city
@@ -126,17 +127,23 @@ const updateProductQuantity = (event, cart) => {
   const product = event.target.closest('article')
   const id = product.dataset.id
   const color = product.dataset.color
-
-  const newQuantity = event.target.value
-  const input = product.querySelector('input')
-  input.setAttribute('value', newQuantity)
-
   const productToUpdate = cart.find(product => product.id === id && product.color === color)
-  productToUpdate.quantity = parseInt(newQuantity)
-  localStorage.clear()
-  localStorage.setItem('cart', JSON.stringify(cart))
 
-  insertCartTotal(cart)
+  try {
+    const newQuantity = parseInt(event.target.value)
+    handleQuantityMaxError(newQuantity)
+    const input = product.querySelector('input')
+    input.setAttribute('value', newQuantity)
+
+    productToUpdate.quantity = newQuantity
+    localStorage.clear()
+    localStorage.setItem('cart', JSON.stringify(cart))
+
+    insertCartTotal(cart)
+  } catch(error) {
+    window.alert(error.message)
+    event.stopPropagation()
+  }
 }
 
 const updateProductEvent = async(cart) => {
@@ -255,6 +262,8 @@ const insertCartProducts = async(cart) => {
 
 }
 
+// === Empty text and total ===
+
 // insert a sentence if cart is empty
 const insertEmptyCartText = () => {
   const sectionParent = document.querySelector("#cart__items")
@@ -263,6 +272,15 @@ const insertEmptyCartText = () => {
   emptyCartText.classList.add('cart__item')
   emptyCartText.innerText = "Votre panier est vide"
   sectionParent.append(emptyCartText)
+}
+
+// insert empty total if cart is empty
+const insertEmptyTotal = () => {
+  const displayTotalPrice = document.querySelector('#totalPrice')
+  const displayTotalQuantity = document.querySelector('#totalQuantity')
+
+  displayTotalPrice.innerText = '0'
+  displayTotalQuantity.innerText = '0'
 }
 
 // === Contact form ===
@@ -374,5 +392,6 @@ if (cart && (cart.length > 0)) {
   })
 } else {
   insertEmptyCartText()
+  insertEmptyTotal()
   handleDisabledStatus(true)
 }
